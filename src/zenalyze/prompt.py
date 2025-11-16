@@ -133,7 +133,9 @@ Rules:
 4) Output only executable Python code only (no markdown/text).
    Display only relevant data: key results, head() samples, and show plots with plt.show().
 5) Continue the analysis using the established context in chat history.
-    - Reuseuse the variables, columns and tables names highlighted inside backticks (`) as much as possible wherever required; they already exist in the workspace. Do not:
+    - Reuse callable identifiers highlighted in backticks (`), such as tables, variables, and intermediate results; they already exist in the workspace and should be used directly.
+    - Reuse column or field names highlighted in angle brackets (‹ ›); treat them as existing schema elements and reference them directly wherever needed.
+    - Do not:
         - check for their presence.
         - recreate or redefine them.
 6) Add brief comments."""

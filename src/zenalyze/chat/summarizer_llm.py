@@ -86,7 +86,8 @@ Summarize briefly what each step did, keeping:
 - Column names or keys used in joins, groupbys, filters, selections, or renames.
 - Important computations, aggregations, or plots.
 - Do not summarize if the entry is already a text-only summary.
-- Highlight all variable names, table names, column names, and join keys in backticks (`).
+- Highlight all callable identifiers (tables, variables, DataFrame names, functions) using backticks (`).
+- Highlight all field or column names using angle brackets (e.g., ‹column_name›).
 - Never include code, pseudocode, or commentary.  
 - Never invent identifiers; if something is unknown, write “unknown”.
 
