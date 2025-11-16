@@ -6,35 +6,48 @@ from zenalyze.chat import BuddyLLM
 
 class Zenalyze(Prompt, LLM):
     """
-    High-level interface that combines prompt construction and LLM interaction to
-    generate code from natural-language queries and (optionally) execute it in
-    the caller's environment.
+    High-level orchestration layer that combines prompt construction, model
+    interaction, code generation, and code execution for interactive data analysis.
 
-    On initialization, it registers provided datasets into the caller's globals
-    (using the given `globals_dic`) so generated code can reference them by name.
+    This class mixes the capabilities of:
+    - `Prompt`   → builds backend-aware system instructions and metadata-rich prompts,
+    - `LLM`      → communicates with the primary code-generation model,
+    - BuddyLLM   → provides conversational, explanatory responses (non-code).
+
+    At initialization, all provided datasets are injected into the caller's
+    `globals()` so that any generated code may directly reference them by their
+    dataset variable names.
 
     Parameters
     ----------
     globals_dic : dict
-        The caller's globals dictionary where dataset variables will be injected.
+        The caller's global namespace. All dataset variables will be added to
+        this dictionary so that generated code executes in the same environment.
     *args : Data | DataLoad
-        One or more `Data` or `DataLoad` objects used to build prompt context.
+        One or more dataset wrappers or dataset loaders. All datasets discovered
+        by these loaders become part of the prompt context for the LLM.
 
     Attributes
     ----------
     args : tuple
-        The original positional arguments supplied at construction time.
-    return_query : bool
-        Controls the return behavior of `do`; when True, returns the generated code
-        (and optionally the namespace).
+        The raw arguments provided to the constructor.
     data : list[Data]
-        Inherited from `Prompt`; all datasets available to the model.
+        Inherited from `Prompt`. Contains all dataset wrappers supplied.
+    mode : str
+        Inherited from `Prompt`. Indicates `"Pandas"` or `"PySpark"` backend.
     history : list[str]
-        Inherited from `LLM`; textual log of prior interactions.
+        Inherited from `LLM`. Stores sequential query–response text for context.
+    return_query : bool
+        Determines whether `do()` returns the code string after execution.
+    buddy_llm : BuddyLLM
+        Helper LLM used for summarization, explanation, and non-code questions.
     """
 
     def __init__(self, globals_dic, *args):
-        """Initialize prompt/LLM mixin, expose datasets into `globals_dic`, and print a summary."""
+        """
+        Initialize both Prompt and LLM components, register datasets into the
+        provided global namespace, attach the Buddy LLM, and print a summary.
+        """
         Prompt.__init__(self, *args)
         LLM.__init__(self)
         self.buddy_llm = BuddyLLM()
@@ -47,24 +60,28 @@ class Zenalyze(Prompt, LLM):
         print(self.__repr__())
 
     def __repr__(self):
-        """Return a concise representation showing available data sources."""
+        """
+        Return a readable summary indicating this is a Zenalyze object and
+        listing all available dataset names.
+        """
         txt = Prompt.__repr__(self).replace('Prompt', 'Zenalyze')
         return txt
         
 
     def code(self, query:str) -> str:
         """
-        Produce model-generated Python code for the given natural-language query.
+        Generate Python code (but do not execute it) for the given natural-language query.
 
         Parameters
         ----------
         query : str
-            The user's request describing the desired analysis or transformation.
+            The user's instruction describing a data transformation or analysis.
 
         Returns
         -------
         str
-            Generated Python code as a string (no execution performed here).
+            The code produced by the LLM according to the backend (Pandas or PySpark),
+            system instructions, metadata context, and chat history.
         """
         payload = self.get_payload(query, self.get_history)
         res = self.response(payload)
@@ -73,23 +90,25 @@ class Zenalyze(Prompt, LLM):
     @staticmethod
     def __gather_caller_ns(depth=2):
         """
-        Collect the caller's execution frame and a merged namespace.
+        Capture the caller’s execution frame and build a merged namespace for safe execution.
 
-        This inspects call frames to build a namespace that contains the caller's
-        globals and locals, enabling generated code to run as if authored in the
-        caller's scope.
+        This constructs a combined namespace containing:
+        - caller globals
+        - caller locals
+        - builtins
+
+        so that LLM-generated code behaves as if the user manually wrote it in
+        the same environment.
 
         Parameters
         ----------
-        depth : int, optional
-            How many frames to step back from the current function to reach the
-            intended caller. Defaults to 2.
+        depth : int
+            Number of frames to walk upward to reach the caller. Default is 2.
 
         Returns
         -------
         tuple[frame, dict]
-            A tuple of (frame, namespace) where `frame` is the caller's frame
-            object and `namespace` is a dict combining globals/locals plus builtins.
+            The caller frame and the merged namespace into which code will execute.
         """
         frame = inspect.currentframe()
         for _ in range(depth):
@@ -103,29 +122,28 @@ class Zenalyze(Prompt, LLM):
 
     def do(self, query:str, echo=True, return_namespace=False) -> str:
         """
-        Generate code for a query and execute it inside the caller's scope.
+        Generate code for the query and execute it inside the caller’s environment.
 
         Parameters
         ----------
         query : str
-            Natural-language instruction describing the desired code.
+            Natural-language instruction describing the computation to perform.
         echo : bool, optional
-            If True, print the generated code before execution. Defaults to True.
+            If True, prints the generated code before execution.
         return_namespace : bool, optional
-            If True, return both the code string and the execution namespace.
-            Defaults to False.
+            When True, also returns the full execution namespace.
 
         Returns
         -------
         str | tuple[str, dict] | None
-            Returns the generated code string, or a tuple (code, namespace) when
-            `return_namespace=True`. Returns None if `self.return_query` is False.
+            - Code string (if `return_query=True`)
+            - `(code, namespace)` when `return_namespace=True`
+            - None if `return_query=False`
 
         Notes
         -----
-        - Execution is performed via `exec` in a merged namespace gathered from
-          the caller's frame; new/updated names are pushed back to the caller's
-          globals for visibility after execution.
+        The executed namespace is pushed back into the caller’s globals,
+        ensuring variables generated inside the LLM-produced code persist after execution.
         """
         code_str = self.code(query)
         if echo:
@@ -141,6 +159,20 @@ class Zenalyze(Prompt, LLM):
         
 
     def buddy(self, query:str) -> str:
+        """
+        Use the lightweight BuddyLLM to answer explanatory or insight-based questions.
+
+        Parameters
+        ----------
+        query : str
+            A non-code question such as “What have we done so far?” or
+            “Explain the previous steps”.
+
+        Returns
+        -------
+        str
+            A concise assistant-style answer based on accumulated history.
+        """
         response = self.buddy_llm.buddy_response(query, self.get_history)
         return response
     
@@ -150,24 +182,25 @@ class Zenalyze(Prompt, LLM):
 
 class TestZen(Prompt, LLM):
     """
-    Lightweight test harness for the Zenalyze workflow that uses dummy LLM responses.
+    A test-only version of Zenalyze that avoids real LLM calls and executes
+    in a controlled dummy environment.
 
-    This class combines `Prompt` and `LLM` in test mode to avoid real API calls,
-    injects provided datasets into a supplied globals dictionary for easy access,
-    and offers simple methods to generate and (mock) execute code for a query.
+    TestZen behaves like Zenalyze but:
+    - Uses dummy responses instead of generating real code,
+    - Avoids API calls entirely,
+    - Helps test the overall workflow, namespace injection, and prompt formatting.
     """
     def __init__(self, globals_dic, *args):
         """
-        Initialize the test client, attach datasets to caller globals, and enable dummy mode.
+        Initialize the prompt and dummy LLM, attach datasets to caller globals,
+        and prepare a BuddyLLM in test mode.
 
         Parameters
         ----------
         globals_dic : dict
-            The caller's globals dictionary where each dataset will be injected
-            under its `Data.name`.
+            The global namespace of the caller.
         *args : Data | DataLoad
-            One or more `Data` or `DataLoad` instances that provide table data
-            and metadata to seed the prompt context.
+            Dataset objects or loaders providing tables for context.
         """
         Prompt.__init__(self, *args)
         LLM.__init__(self, True)
@@ -193,17 +226,10 @@ class TestZen(Prompt, LLM):
 
     def code(self, query:str) -> str:
         """
-        Produce a dummy code string for the given natural-language query.
+        Produce a deterministic dummy string instead of actual Python code.
 
-        Parameters
-        ----------
-        query : str
-            The user's instruction describing the desired analysis or transformation.
-
-        Returns
-        -------
-        str
-            Model (dummy) response text intended to represent generated Python code.
+        Intended for verifying prompt construction, metadata formatting,
+        and the conversation loop without incurring model costs.
         """
         payload = self.get_payload(query, self.get_history)
         res = self.response(payload)
@@ -211,20 +237,15 @@ class TestZen(Prompt, LLM):
 
     def do(self, query:str) -> str:
         """
-        Simulate execution by returning a formatted string that includes the code.
+        Simulate execution of code without running anything.
 
-        Parameters
-        ----------
-        query : str
-            The user's instruction to convert into code.
-
-        Returns
-        -------
-        str
-            A string indicating execution along with the dummy code content.
+        Returns a string describing what *would* have been executed.
         """
         return f"""Executing {self.code(query)}"""
     
     def buddy(self, query:str) -> str:
+        """
+        Use the BuddyLLM in test mode to generate a dummy explanatory response.
+        """
         response = self.buddy_llm.buddy_response(query, self.get_history)
         return response

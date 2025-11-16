@@ -3,7 +3,7 @@ from typing import Tuple
 import requests
 
 
-class SummarizerLLM:
+class CodeSummarizerLLM:
     """
     Lightweight wrapper for calling a summarization LLM (e.g., an OSS chat model)
     to compress and normalize code-generation history into concise, reproducible

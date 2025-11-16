@@ -2,7 +2,7 @@ import os
 from typing import Tuple
 import requests
 from zenalyze.prompt import Payload
-from zenalyze.chat.summarizer_llm import SummarizerLLM
+from zenalyze.chat.summarizer_llm import CodeSummarizerLLM
 
 
 class LLM:
@@ -21,7 +21,7 @@ class LLM:
     ----------
     history : list[str]
         Stored turn-by-turn conversation history in a simple text format.
-    history_retention : int | None
+    history_retention : int
         Maximum number of history entries to retain; if None, retain all.
     """
 
@@ -30,7 +30,7 @@ class LLM:
         self.__test_mode = test_mode
         self.history = []
         self.history_retention = 8
-        self.summarizer = SummarizerLLM()
+        self.summarizer = CodeSummarizerLLM()
         self.__model = os.getenv("MODEL") or 'openai/gpt-oss-120b' if not self.__test_mode else None
         self.api_key = os.getenv("GROQ_API_KEY") if not self.__test_mode else None
 
@@ -90,9 +90,6 @@ Response:
         """
         text = self.history_format(query, response)
         self.summarize_history()
-        # if (self.history_retention is not None) and (self.history_retention > 0) and (len(self.history) >= self.history_retention):
-        #     summarized_history = self.__summarizer.summarize(self.history[:-1*self.history_retention+1])
-        #     history = self.history[-1*self.history_retention+1:]
         self.history.append(text)
 
     @property

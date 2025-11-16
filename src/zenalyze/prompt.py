@@ -34,41 +34,53 @@ class Payload(BaseModel):
 class Prompt:
     """
     Builds structured prompt payloads for large language model (LLM) queries based on
-    available datasets and analysis context.
+    available datasets, execution mode (Pandas or PySpark), and the ongoing analysis
+    context.
 
-    This class acts as the intermediary between loaded data (`Data` or `DataLoad` objects)
-    and the LLM interface by preparing well-formatted system and user messages, as well as
-    metadata-rich context descriptions.
+    This class acts as the intermediary between loaded data (`Data` or `DataLoad`
+    objects) and the LLM interface. It:
+    - Detects whether the analysis backend is pandas or Spark.
+    - Generates backend-specific instructions for code generation.
+    - Embeds metadata for all loaded datasets into the system prompt.
+    - Packages user queries, system instructions, and chat history into a complete
+      `Payload` object.
 
     Parameters
     ----------
     *args : Data or DataLoad
-        One or more `Data` or `DataLoad` objects containing preloaded datasets and
-        their associated metadata. These are used to automatically generate the
-        metadata section of the prompt.
+        One or more dataset objects (`Data`) or dataset loader objects (`DataLoad`).
+        The loader form may contain multiple datasets; each dataset contributes to
+        the metadata used in LLM prompting.
 
     Attributes
     ----------
     data : list[Data]
-        A list of `Data` objects used as input context for the model.
+        All datasets extracted from the provided arguments.
+    mode : str
+        Execution mode inferred from provided objects — either `"Pandas"` or `"PySpark"`.
     __instruction : str
-        The base instruction text defining coding style and behavior rules for the model.
+        Base instruction block injected into the system prompt, including backend
+        rules, coding conventions, and history-continuation rules.
 
     Methods
     -------
-    __create_instructions_with_mode() -> None
-        Initializes the default instruction prompt with standardized coding guidelines.
-    __repr__() -> str
-        Returns a concise class representation showing associated data names.
-    format_metadata_to_required_format(data: Data) -> str
-        Converts a `Data` object’s attributes into a structured text block.
-    llm_formatted_metadata : str
-        Property that combines formatted metadata for all loaded tables into one text section.
-    instructions : str
-        Getter/setter property for customizing the instruction text used in system prompts.
-    get_payload(user_input: str, formatted_chat_history: str) -> Payload
-        Constructs a `Payload` object combining system instructions, data metadata, chat history,
-        and user input for LLM query execution.
+    __get_data_and_mode()
+        Extracts all `Data` objects from arguments and determines whether the
+        execution backend is pandas or Spark.
+    __create_instructions_with_mode()
+        Constructs a backend-aware instruction block containing coding rules
+        and analysis-continuation constraints.
+    __repr__()
+        Returns a compact representation listing loaded datasets.
+    format_metadata_to_required_format(data)
+        Converts a single dataset’s metadata into formatted text for prompting.
+    llm_formatted_metadata
+        Builds a multi-dataset metadata section for inclusion in system messages.
+    instructions
+        Get or set the instruction block.
+    get_payload(user_input, formatted_chat_history)
+        Produces a `Payload` object containing system prompt, metadata, history,
+        and user query for LLM submission.
     """
     def __init__(self, *args):    
         """Initialize the prompt with one or more Data or DataLoad objects."""

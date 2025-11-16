@@ -28,21 +28,43 @@ Main Features
 
 Usage Example
 --------------
->>> from zenalyze import create_quick_zenalyze_object_with_env_var_and_last5_hist
->>> zen = create_quick_zenalyze_object_with_env_var_and_last5_hist(globals(), "./data")
+>>> from zenalyze import create_zenalyze_object_with_env_var_and_last5_hist
+>>> zen = create_zenalyze_object_with_env_var_and_last5_hist(globals(), "./data")
 >>> zen.do("show total sales per region")
 
-Package maintained by: Tuhin Kumar Dutta 
+Maintainer
+----------
+Tuhin Kumar Dutta
 """
 
+# Public package version
+__version__ = "0.0.1"
+
+# Core data/backends
 from zenalyze.data import PandasData, PandasDataLoad, SparkData, SparkDataLoad
+
+# High level orchestrator
 from zenalyze.zenalyze import Zenalyze, TestZen
+
+# Convenience quick-constructors
 from zenalyze._quick_obj import (
     create_zenalyze_object_with_env_var_and_last5_hist,
-    create_testzen_object_with_env_var_and_last5_hist
-    )
+    create_testzen_object_with_env_var_and_last5_hist,
+)
 
+# Chat helpers (expose at package root for convenience)
+from zenalyze.chat.summarizer_llm import CodeSummarizerLLM
+from zenalyze.chat.buddy_llm import BuddyLLM
 
-__all__ = ["PandasData", "PandasDataLoad", "SparkData", "SparkDataLoad", "Zenalyze", "TestZen",
-           "create_zenalyze_object_with_env_var_and_last5_hist",
-           "create_testzen_object_with_env_var_and_last5_hist"]
+__all__ = [
+    "PandasData",
+    "PandasDataLoad",
+    "SparkData",
+    "SparkDataLoad",
+    "Zenalyze",
+    "TestZen",
+    "create_zenalyze_object_with_env_var_and_last5_hist",
+    "create_testzen_object_with_env_var_and_last5_hist",
+    "CodeSummarizerLLM",
+    "BuddyLLM",
+]

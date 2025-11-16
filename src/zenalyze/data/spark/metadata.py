@@ -7,9 +7,33 @@ from pyspark.sql import functions as F
 
 def get_sample_values_from_column(df: DataFrame, count: int = 5) -> str:
     """
-    For each column in a Spark DataFrame, collect up to `count` unique non-null values,
-    sampling with replacement if needed. Returns a stringified dict (single quotes removed).
-    Note: this function collects distinct values per column to the driver.
+    Collect sample values for each column in a Spark DataFrame.
+
+    For each column, this function:
+    - selects distinct non-null values,
+    - collects them to the driver,
+    - chooses up to `count` values (sampling without replacement when possible,
+      otherwise sampling with replacement),
+    - converts values to strings and returns a stringified mapping (single quotes removed).
+
+    Parameters
+    ----------
+    df : pyspark.sql.DataFrame
+        Input Spark DataFrame to sample from.
+    count : int, optional
+        Number of sample values to return per column. Defaults to 5.
+
+    Returns
+    -------
+    str
+        A string representation of a dict mapping column names to lists of
+        sample values (values converted to strings). Single quotes are removed
+        for compactness.
+
+    Notes
+    -----
+    - This function collects distinct values to the driver; avoid using it on
+      very high-cardinality columns or massive datasets without caution.
     """
     samples: Dict[str, list] = {}
     for col in df.columns:
@@ -38,8 +62,24 @@ def get_sample_values_from_column(df: DataFrame, count: int = 5) -> str:
 
 def _null_count_for_column(df: DataFrame, column: str, col_type: str) -> int:
     """
-    Return count of null-like values for the given column.
-    For float/double types, counts both null and NaN.
+    Compute the number of null-like entries in a column.
+
+    This function counts SQL NULLs for any column. For floating columns (types
+    containing 'double' or 'float'), it also counts NaN values.
+
+    Parameters
+    ----------
+    df : pyspark.sql.DataFrame
+        The DataFrame containing the column.
+    column : str
+        Column name to inspect.
+    col_type : str
+        String representation of the column type (as returned by `df.dtypes`).
+
+    Returns
+    -------
+    int
+        The count of null-like entries (NULL and, for floats, NaN) in the column.
     """
     null_count = df.filter(F.col(column).isNull()).count()
 
@@ -52,8 +92,38 @@ def _null_count_for_column(df: DataFrame, column: str, col_type: str) -> int:
 
 def get_metadata(df: DataFrame) -> str:
     """
-    Generate a metadata string for a Spark DataFrame similar to your pandas version.
-    Returns a string enclosed in braces.
+    Generate a compact metadata mapping for a Spark DataFrame.
+
+    The metadata includes:
+    - number of rows and columns,
+    - a comma-separated string of column names,
+    - per-column null percentages (as stringified values),
+    - per-column data types (stringified),
+    - sample values per column (stringified mapping produced by
+      `get_sample_values_from_column`).
+
+    Parameters
+    ----------
+    df : pyspark.sql.DataFrame
+        The DataFrame to profile.
+
+    Returns
+    -------
+    dict
+        A dictionary with keys:
+        - "number of rows": int
+        - "number of columns": int
+        - "column names": str (comma-separated)
+        - "column value null percentage": str (stringified dict of percentages)
+        - "column data types": str (stringified dict of dtypes)
+        - "smaple values of the columns": str (stringified dict of sample lists)
+
+    Notes
+    -----
+    - The function returns Python native collections (a dict); some fields inside
+      are stringified dicts to keep the overall metadata compact for embedding in
+      prompts or logs.
+    - Counting and sampling operations may be expensive on very large DataFrames.
     """
     num_rows = df.count()
     num_columns = len(df.columns)
