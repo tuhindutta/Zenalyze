@@ -133,12 +133,14 @@ Rules:
 4) Output only executable Python code only (no markdown/text).
    Display only relevant data: key results, head() samples, and show plots with plt.show().
 5) Continue the analysis using the established context in chat history.
+6) Add brief comments."""
+        
+        self.__user_prompt_intruction = """Refer the following chat history to
     - Reuse callable identifiers highlighted in backticks (`), such as tables, variables, and intermediate results; they already exist in the workspace and should be used directly.
     - Reuse column or field names highlighted in angle brackets (‹ ›); treat them as existing schema elements and reference them directly wherever needed.
-    - Do not:
-        - check for their presence.
-        - recreate or redefine them.
-6) Add brief comments."""
+        - Do not:
+            - check for their presence.
+            - recreate or redefine them."""
 
     def __repr__(self):
         """Return a string representation listing all associated data objects."""
@@ -187,6 +189,15 @@ Metadata: {data.metadata}"""
         """Update the instruction text with a custom value."""
         self.__instruction = str(instr)
 
+    @property
+    def user_prompt_intruction(self):
+        return self.__user_prompt_intruction
+    
+    @user_prompt_intruction.setter
+    def user_prompt_intruction(self, value):
+        self.__user_prompt_intruction = value
+
+
     def get_payload(self, user_input:str, formatted_chat_history:str) -> Payload:
         """
         Build a complete prompt payload combining system instructions, dataset
@@ -208,8 +219,16 @@ Metadata: {data.metadata}"""
         system_prompt = f"{self.instructions}\n\n{self.llm_formatted_metadata}"
         chat_history = "\n\n"+formatted_chat_history if formatted_chat_history != '' else " None"
         user_input = f"Time {datetime.today().strftime('%H:%M')} - User query: {user_input}"
+        user_instructions = self.user_prompt_intruction
+        content = f"""{user_instructions}
+
+Chat history:
+{chat_history}
+
+Query: {user_input}
+"""
         txt = [{"role": "system", "content": system_prompt},
-              {"role": "user", "content": f"Chat history:{chat_history}\n\n{user_input}"}]
+              {"role": "user", "content": content}]
         payload = {'query':user_input, 'payload_message':txt}
         return Payload(**payload)
 
