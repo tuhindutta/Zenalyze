@@ -132,7 +132,7 @@ Rules:
 3) The packages (pd, np, plt, pyspark) are already imported—do not reimport. Import extras only if essential.
 4) Output only executable Python code only (no markdown/text).
    Display only relevant data: key results, head() samples, and show plots with plt.show().
-5) Continue the analysis using the established context in chat history - use the variables, column names, and keys highlighted inside backticks (`) wherever required; they already exist in the workspace. Do not:
+5) Continue the analysis using the established context in chat history - reuseuse the variables, columns and tables names highlighted inside backticks (`) as much as possible wherever required; they already exist in the workspace. Do not:
    - check for their presence.
    - recreate or redefine them.
 6) Add brief comments."""
