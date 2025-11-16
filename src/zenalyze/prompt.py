@@ -139,7 +139,7 @@ Rules:
     - Reuse callable identifiers highlighted in backticks (`), such as tables, variables, and intermediate results; they already exist in the workspace and should be used directly.
     - Reuse column or field names highlighted in angle brackets (‹ ›); treat them as existing schema elements and reference them directly wherever needed.
         - Do not generate code to:
-            - check for their presence in globals.
+            - check for their presence in globals().
             - recreate or redefine them."""
 
     def __repr__(self):
