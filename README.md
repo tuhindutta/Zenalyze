@@ -2,7 +2,7 @@
 **AI-powered, context-aware data analysis with Pandas or PySpark**
 
 `zenalyze` turns Large Language Models into a practical coding assistant designed specifically for data analysis.  
-It loads datasets, extracts metadata, builds intelligent prompts, tracks analysis history, and generates fully executable Python code directly in your environment.
+It loads datasets, extracts metadata, builds intelligent prompts, tracks analysis history, and generates fully executable Python code and even executes directly in your environment.
 
 ### **[GitHub Link](https://github.com/tuhindutta/Zenalyze)**
 
