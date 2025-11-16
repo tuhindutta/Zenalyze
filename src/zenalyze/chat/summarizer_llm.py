@@ -79,21 +79,25 @@ class CodeSummarizerLLM:
         """
         system_prompt = """You summarize Python data-analysis code histories so they can be quickly understood or reconstructed.
 
-Input: each entry contains a user query and the code the model produced.
+Input: each entry contains a user query and the code generated for it.
 
 Summarize briefly what each step did, keeping:
 - Exact variable names and dataset names.
-- Column names or keys used in joins, groupbys, selections, or renames.
-- Important computations or plots.
-- Do not summarize if the code is summarized to text format.
+- Column names or keys used in joins, groupbys, filters, selections, or renames.
+- Important computations, aggregations, or plots.
+- Do not summarize if the entry is already a text-only summary.
 - Highlight all variable names, table names, column names, and join keys in backticks (`).
-- No code, no fluff, no extra commentary. Do not invent identifiers; if unknown, write "unknown".
+- Never include code, pseudocode, or commentary.  
+- Never invent identifiers; if something is unknown, write “unknown”.
 
-Output concise sequential sentences, one per step if possible.
-Avoid code formatting or long explanations—just describe actions precisely enough to recreate them."""
+Output concise step-wise sentences that explicitly state which variables were created, modified, or used, so the LLM can reliably reuse them in future steps.
 
-        user_prompt = f"""Summarize the code-generation history step by step.
-For each step: prefix with [Q: <brief rewritten intent of the user query>], then in ONE concise sentence describe what the code did.
+Avoid code formatting or long explanations—just describe the action precisely enough that the code could be recreated from the description."""
+
+        user_prompt = f"""Summarize the following code-generation history.
+Rewrite each step as:
+[Q: <brief rewritten intent>] <concise description of what the code did>
+
 History:
 {user_input}"""
 
