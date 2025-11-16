@@ -38,7 +38,7 @@ Tuhin Kumar Dutta
 """
 
 # Public package version
-__version__ = "0.0.1"
+__version__ = "0.1.0"
 
 # Core data/backends
 from zenalyze.data import PandasData, PandasDataLoad, SparkData, SparkDataLoad
