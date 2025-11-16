@@ -172,16 +172,21 @@ Response:
         query, headers, model_payload = self.create_payload(payload)
 
         url = "https://api.groq.com/openai/v1/chat/completions"
+
+        output = ''
+
         try:
             response = requests.post(url, headers=headers, json=model_payload)
             api_output = response.json()
             if "error" in api_output:
-                output = f"⚠️ API Error: {api_output['error'].get('message', 'Unknown error')}"
+                err = f"⚠️ API Error: {api_output['error'].get('message', 'Unknown error')}"
+                print(err)
             else:
                 output = api_output['choices'][0]['message']['content'].strip()
         except Exception as e:
-            output = "⚠️ Some technical error occurred at my end. Please try after sometime."
+            err = "⚠️ Some technical error occurred at my end. Please try after sometime."
             print(e)
+            print(err)
         self.store_history(query, output)
         return '\n'.join(output.split('\n'))
 
