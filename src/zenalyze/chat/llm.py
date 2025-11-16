@@ -70,11 +70,25 @@ Response:
     
 
     def summarize_history(self) -> None:
+        """
+        Compress the accumulated analysis history using the Summarizer LLM.
+
+        This method triggers when the number of history entries reaches or exceeds
+        the configured retention limit. It selects the appropriate portion of the
+        history, concatenates it into a single text block, sends it to the
+        Summarizer LLM, and replaces the history buffer with the compressed result.
+        """
         retn = self.history_retention
         hist = self.history
         if len(hist) == retn:
-            compressed_hist = self.summarizer.summarize(self.get_history)
-            self.history = [compressed_hist]
+            if hist[0].startswith('[Q:'):
+                hist_to_compress = hist[1:]
+            else:
+                hist_to_compress = hist
+                self.history = []
+            stringed_history = '\n\n'.join(hist_to_compress)
+            compressed_hist = self.summarizer.summarize(stringed_history)
+            self.history.append(compressed_hist)
 
 
     def store_history(self, query:str, response:str) -> None:
