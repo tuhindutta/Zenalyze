@@ -148,8 +148,7 @@ Rules:
             details, and computed metadata.
         """
         text = f"""Table name: {data.name}
-Data description: {data.data_desc}
-Data columns description: {data.column_desc}
+Data file description: {data.description}
 Metadata: {data.metadata}"""
         return text
 
@@ -201,79 +200,3 @@ Metadata: {data.metadata}"""
 
 
 
-# class Prompt:
-
-#     """
-#     mode = 'pandas' or 'spark'
-#     """
-
-#     def __init__(self, *args):        
-#         data = []
-#         for i in args:
-#             if isinstance(i, DataLoad):
-#                 data.extend(i.data)
-#             elif isinstance(i, Data):
-#                 data.append(i)
-#             else:
-#                 raise ValueError('Data is not of type Data or DataLoad')
-#         self.data = data
-#         self.__mode = 'pandas'
-#         self.__create_instructions_with_mode(self.__mode)
-
-#     @property
-#     def mode(self):
-#         return self.__mode
-
-#     @mode.setter
-#     def mode(self, value:str):
-#         assert value in ['pandas', 'spark'], f"value should be either 'pandas' or 'spark'"
-#         self.__mode = value
-#         self.__create_instructions_with_mode(self.__mode)
-
-#     def __create_instructions_with_mode(self, mode:str):
-#         self.__instruction = f"""{datetime.today().strftime("%d %b, %Y (%A)")} - You are an expert data analyst.
-# MODE: {mode}
-# Write clean procedural Python code (no functions/classes) using pyspark.sql, pandas (pd), numpy (np), and matplotlib.pyplot (plt).
-# Rules:
-# 1) Use {mode} for all data manipulation. 
-# 2) Do NOT convert between Spark and pandas unless the query explicitly says “convert”. 
-#    - Forbidden unless asked: toPandas(), createDataFrame, to_spark(), spark.createDataFrame, koalas, etc.
-# 3) If MODE=pandas: do not reference 'spark' or pyspark APIs.
-#    If MODE=spark: use SparkSession 'spark'; do not use 'sc' directly (use spark.sparkContext if needed).
-# 4) Tables are pre-loaded in the requested library; use their names directly.
-# 5) The packages (pd, np, plt, and pyspark) are already imported—do not reimport. Import extras only if essential.
-# 6) Output only executable Python code (no markdown/text). 
-#    Display only relevant data: key results, head() samples, and show plots with plt.show().
-# 7) Add brief comments."""
-
-#     def __repr__(self):
-#         args = ', '.join([f"Data({i.name})" for i in self.data])
-#         cls_repr = f"Prompt({args})"
-#         return cls_repr
-
-#     @property
-#     def llm_formatted_metadata(self):
-#         text_format = lambda d: f"""Table name: {d.name}
-# Data description: {d.data_desc}
-# Data columns description: {d.column_desc}
-# Metadata: {d.metadata}"""
-#         texts = [text_format(i) for i in self.data]
-#         formatted_text = f'**Details of {len(texts)} tables available**:\n\n'+'\n\n'.join(texts)
-#         return formatted_text
-
-#     @property
-#     def instructions(self):
-#         return self.__instruction
-
-#     @instructions.setter
-#     def instructions(self, instr:str):
-#         self.__instruction = str(instr)
-
-#     def get_payload(self, user_input:str, formatted_chat_history:str) -> Payload:
-#         system_prompt = f"{self.instructions}\n\n{self.llm_formatted_metadata}"
-#         chat_history = "\n\n"+formatted_chat_history if formatted_chat_history != '' else " None"
-#         user_input = f"Time {datetime.today().strftime('%H:%M')} - User query: {user_input}"
-#         txt = [{"role": "system", "content": system_prompt},
-#               {"role": "user", "content": f"Chat history:{chat_history}\n\n{user_input}"}]
-#         payload = {'query':user_input, 'payload_message':txt}
-#         return Payload(**payload)

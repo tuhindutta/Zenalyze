@@ -71,10 +71,12 @@ def get_metadata(df:pd.DataFrame) -> str:
     columns_null_pct = str(dict((100*df.isnull().sum()/len(df)).astype('str'))).replace("'", "").replace(' ','')
     columns_data_type = str(dict(df.dtypes.apply(lambda x: str(x).replace('dtype(', '').replace(')', '')))).replace("'", "").replace(' ','')
     columns_sample_values = get_sample_values_from_column(df)
-    metadata = f"""number of rows: {num_rows}
-number of columns: {num_columns}
-column names: {columns}
-column value null percentage: {columns_null_pct}
-column data types: {columns_data_type}
-smaple values of the columns: {columns_sample_values}"""
-    return '{'+metadata+'}'
+    metadata = {
+        "number of rows": num_rows,
+        "number of columns": num_columns,
+        "column names": columns,
+        "column value null percentage": columns_null_pct,
+        "column data types": columns_data_type,
+        "smaple values of the columns": columns_sample_values
+    }
+    return metadata

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import pandas as pd
 from pyspark.sql import DataFrame as SparkDataFrame
+from pyspark.sql import SparkSession
 from zenalyze.data.data_base_class import Data, DataLoad
 from zenalyze.data.spark.metadata import get_metadata
 
@@ -14,7 +15,7 @@ class SparkData(Data):
 
 class SparkDataLoad(DataLoad):
 
-    def __init__(self, spark_session, data_loc):
+    def __init__(self, spark_session:SparkSession, data_loc:str):
         super().__init__(data_loc, get_metadata)
         self.spark_session = spark_session
 

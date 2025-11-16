@@ -27,8 +27,7 @@ class Data:
     """
     data: Union[pd.DataFrame, SparkDataFrame]
     name: str
-    data_desc: str = None
-    column_desc: str = None
+    description: str = None
     metadata: str = None
 
 
@@ -237,11 +236,6 @@ class DataLoad:
             file extension; returns None if the extension is not recognized.
         """
         pass
-        # func = {
-        #     'csv': pd.read_csv,
-        #     'excel': pd.read_excel
-        # }
-        # return func.get(self.__file_extn(path))
 
     @staticmethod
     def __file_name(path:str) -> str:
@@ -259,6 +253,10 @@ class DataLoad:
             The base name of the file without its extension.
         """
         return os.path.basename(path).split('.')[0]
+    
+    @staticmethod
+    def __dict_to_pretty_string(obj) -> str:
+        return json.dumps(obj, indent='\t').strip()
 
     def load_data(self, path:str) -> Data:
         """
@@ -279,20 +277,14 @@ class DataLoad:
             A `Data` object containing the DataFrame and its contextual information.
         """
         data = self._loader(path)(path)
-        data_desc = None
-        column_desc = None
         file_name = self.__file_name(path)
         desc = self.__description
-        if desc:
-            file_desc = desc.get(file_name)
-            data_desc = str(file_desc.get('data_desc'))
-            column_desc = str(file_desc.get('columns_desc'))
+        description = self.__dict_to_pretty_string(desc.get(file_name)) if desc else None
         obj = Data(
             data = data,
             name = file_name,
-            data_desc = data_desc,
-            column_desc = column_desc,
-            metadata = self.metadata_func(data)
+            description = description,
+            metadata = self.__dict_to_pretty_string(self.metadata_func(data))
         )
         return obj
 
