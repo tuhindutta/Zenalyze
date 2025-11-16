@@ -1,4 +1,4 @@
-# 🚀 zenalyze
+# 🚀 Zenalyze
 **AI-powered, context-aware data analysis with Pandas or PySpark**
 
 `zenalyze` turns Large Language Models into a practical coding assistant designed specifically for data analysis.  
@@ -156,7 +156,7 @@ pip install zenalyze
 From GitHub
 
 ```bash
-pip install git+https://github.com/<your-username>/zenalyze.git
+pip install git+https://github.com/tuhindutta/Zenalyze.git
 ```
 
 ---
@@ -219,7 +219,7 @@ Data Layer
 
 | Component                      | Purpose                 |
 | ------------------------------ | ----------------------- |
-| `DataBase`                     | Base dataset wrapper    |
+| `Data`                     | Base dataset wrapper    |
 | `PandasData`, `PandasDataLoad` | Pandas backend          |
 | `SparkData`, `SparkDataLoad`   | Spark backend           |
 | `metadata.py`                  | Extracts table metadata |
@@ -268,7 +268,10 @@ zen.buddy("Explain the main insights so far")
 ---
 
 ## 👤 Maintainer
-### [Tuhin Kumar Dutta]
+**Tuhin Kumar Dutta**
+
+- 🌐 Website: https://www.tuhindutta.com/
+- 💼 LinkedIn: https://www.linkedin.com/in/t-k-dutta
 
 ---
 
@@ -276,7 +279,7 @@ zen.buddy("Explain the main insights so far")
 Pull requests and issues are welcome.
 
 ```bash
-git clone https://github.com/<your-username>/zenalyze.git
+git clone https://github.com/tuhindutta/Zenalyze.git
 ```
 
 Let’s build the most capable AI-driven data analysis toolkit together.
