@@ -35,18 +35,18 @@ Usage Example
 Package maintained by: Tuhin Kumar Dutta 
 """
 
-from zenalyze.data import Data, DataLoad
+from zenalyze.data import PandasData, PandasDataLoad, SparkData, SparkDataLoad
 from zenalyze.zenalyze import Zenalyze, TestZen
 
 def create_quick_zenalyze_object_with_env_var_and_last5_hist(globals_dic, data_location:str):
-    data = DataLoad(data_location)
+    data = PandasDataLoad(data_location)
     zen = Zenalyze(globals_dic, data)
     zen.history_retention = 5
     zen.return_query = False
     return zen
 
 def create_quick_testzen_object_with_env_var_and_last5_hist(globals_dic, data_location:str):
-    data = DataLoad(data_location)
+    data = PandasDataLoad(data_location)
     zent = TestZen(globals_dic, data)
     zent.history_retention = 5
     return zent

@@ -1,7 +1,8 @@
 from datetime import datetime
 from pydantic import BaseModel
 from typing import List
-from zenalyze.data import Data, DataLoad
+from zenalyze.data import Data
+from zenalyze.data.data_base_class import DataLoad
 
 
 class Payload(BaseModel):
@@ -70,36 +71,59 @@ class Prompt:
         and user input for LLM query execution.
     """
     def __init__(self, *args):    
-        """Initialize the prompt with one or more Data or DataLoad objects."""    
+        """Initialize the prompt with one or more Data or DataLoad objects."""
+        self.args = args  
+        self.__get_data_and_mode()
+        self.__create_instructions_with_mode()
+
+
+    def __get_data_and_mode(self):
         data = []
-        for i in args:
+        modes_map = {
+            'PandasData': 'Pandas',
+            'PandasDataLoad': 'Pandas',
+            'SparkData': 'PySpark',
+            'SparkDataLoad': 'PySpark'
+        }
+
+        modes = []
+        for i in self.args:
             if isinstance(i, DataLoad):
                 data.extend(i.data)
             elif isinstance(i, Data):
                 data.append(i)
             else:
-                raise ValueError('Data is not of type Data or DataLoad')
+                raise ValueError('Data is not of type Data or DataLoad')           
+            modes.append(modes_map.get(i.get_class_name))
+            
+        assert len(set(modes)) == 1, "Data mode should be either Pandas or Spark."
+        self.mode = list(set(modes))[0]
         self.data = data
-        self.__create_instructions_with_mode()
+
 
     def __create_instructions_with_mode(self) -> None:
         """
         Create the default base instruction string that defines how the LLM
         should generate code and display output.
         """
+        mode_prompt = {
+            "Pandas": "Use Pandas for data manipulation and transformation.",
+            "PySpark": "Use `spark` as spark session and use sparkcontext from inside the spark session for data manipulation and transformation."
+        }
         self.__instruction = f"""{datetime.today().strftime("%d %b, %Y (%A)")} - You are an expert data analyst and a coding assistant.
 Write clean procedural Python code (minimum and relevant functions/classes only if extremely required) primarily using:
-pandas (pd), numpy (np), and matplotlib.pyplot (plt)
+pandas (pd), numpy (np), matplotlib.pyplot (plt), PySpark
 
 Rules:
-1) Tables are pre-loaded; use their names directly.
-2) The packages (pd, np, plt) are already imported—do not reimport. Import extras only if essential.
-3) Output only executable Python code only (no markdown/text).
+1) {mode_prompt[self.mode]}
+2) Tables are pre-loaded; use their names directly.
+3) The packages (pd, np, plt, pyspark) are already imported—do not reimport. Import extras only if essential.
+4) Output only executable Python code only (no markdown/text).
    Display only relevant data: key results, head() samples, and show plots with plt.show().
-4) Continue the analysis using the established context in chat history - use the variables, column names, and keys highlighted inside backticks (`) wherever required; they already exist in the workspace. Do not:
+5) Continue the analysis using the established context in chat history - use the variables, column names, and keys highlighted inside backticks (`) wherever required; they already exist in the workspace. Do not:
    - check for their presence.
    - recreate or redefine them.
-5) Add brief comments."""
+6) Add brief comments."""
 
     def __repr__(self):
         """Return a string representation listing all associated data objects."""

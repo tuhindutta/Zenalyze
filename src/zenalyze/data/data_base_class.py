@@ -1,9 +1,10 @@
 import pandas as pd
+from pyspark.sql import DataFrame as SparkDataFrame
 import os
 import json
 from dataclasses import dataclass
 import ast
-from zenalyze.metadata import get_metadata
+from typing import Union
 
 
 @dataclass
@@ -24,7 +25,7 @@ class Data:
     metadata : str, optional
         Additional metadata or auxiliary information related to the dataset (e.g., source, version, notes).
     """
-    data: pd.DataFrame
+    data: Union[pd.DataFrame, SparkDataFrame]
     name: str
     data_desc: str = None
     column_desc: str = None
@@ -107,7 +108,7 @@ class DataLoad:
         Loads all data files in the directory and stores them as a list of `Data` objects in `self.data`.
     """
 
-    def __init__(self, data_loc):
+    def __init__(self, data_loc, metadata_func):
         """
         Initialize the loader with a directory path, discover data files, read the
         optional description JSON, and eagerly load all datasets.
@@ -118,6 +119,7 @@ class DataLoad:
             Directory containing the tabular files and an optional 'desc.json'.
         """
         data_loc = os.path.abspath(data_loc)
+        self.metadata_func = metadata_func
         fileNames = os.listdir(data_loc)
         self.__data_paths = [os.path.join(data_loc, i) for i in fileNames if not i.endswith('.json')]
         self.__data_desc_path = os.path.join(data_loc, 'desc.json')
@@ -125,7 +127,7 @@ class DataLoad:
         self.__load_description()
         self.load()
 
-    def __csv_or_excel(self, path:str) -> str:
+    def _file_extn(self, path:str) -> str:
         """
         Identify the file type from its extension.
 
@@ -219,7 +221,7 @@ class DataLoad:
             print('Description file N/A')
         self.__description = desc
 
-    def __loader(self, path:str) -> pd.DataFrame:
+    def _loader(self, path:str) -> None:
         """
         Select the appropriate pandas reader function for the given file path.
 
@@ -234,11 +236,12 @@ class DataLoad:
             A callable such as `pd.read_csv` or `pd.read_excel` based on the
             file extension; returns None if the extension is not recognized.
         """
-        func = {
-            'csv': pd.read_csv,
-            'excel': pd.read_excel
-        }
-        return func.get(self.__csv_or_excel(path))
+        pass
+        # func = {
+        #     'csv': pd.read_csv,
+        #     'excel': pd.read_excel
+        # }
+        # return func.get(self.__file_extn(path))
 
     @staticmethod
     def __file_name(path:str) -> str:
@@ -275,7 +278,7 @@ class DataLoad:
         Data
             A `Data` object containing the DataFrame and its contextual information.
         """
-        data = self.__loader(path)(path)
+        data = self._loader(path)(path)
         data_desc = None
         column_desc = None
         file_name = self.__file_name(path)
@@ -289,7 +292,7 @@ class DataLoad:
             name = file_name,
             data_desc = data_desc,
             column_desc = column_desc,
-            metadata = get_metadata(data)
+            metadata = self.metadata_func(data)
         )
         return obj
 
