@@ -69,23 +69,36 @@ Response:
         return formatted_txt
     
 
+    # def summarize_history(self) -> None:
+    #     retn = self.history_retention
+    #     hist = self.history
+    #     if len(hist) == retn:
+    #         compressed_hist = self.summarizer.summarize(self.get_history)
+    #         self.history = [compressed_hist]
+
+
     def summarize_history(self) -> None:
         """
         Compress the accumulated analysis history using the Summarizer LLM.
 
-        This method triggers when the number of history entries reaches or exceeds
+        This method triggers when the number of history entries exceeds
         the configured retention limit. It selects the appropriate portion of the
         history, concatenates it into a single text block, sends it to the
         Summarizer LLM, and replaces the history buffer with the compressed result.
         """
         retn = self.history_retention
         hist = self.history
-        if len(hist) == retn:
-            if hist[0].startswith('[Q:'):
-                hist_to_compress = hist[1:]
-            else:
-                hist_to_compress = hist
-                self.history = []
+        if len(hist) > retn:
+
+            first_non_summarized_index = 0
+            for idx, h in enumerate(hist):
+                if not h.startswith('[Q:'):
+                    first_non_summarized_index = idx
+                    break
+
+            hist_to_compress = hist[first_non_summarized_index:]
+            self.history = self.history[:first_non_summarized_index]
+
             stringed_history = '\n\n'.join(hist_to_compress)
             compressed_hist = self.summarizer.summarize(stringed_history)
             self.history.append(compressed_hist)
