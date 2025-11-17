@@ -194,7 +194,7 @@ pip install git+https://github.com/tuhindutta/Zenalyze.git
 
 ---
 
-## 📂 Project Structure
+## 📂 Package Structure
 ```
 zenalyze/
  ├── data/
@@ -216,8 +216,7 @@ zenalyze/
  ├── prompt.py
  ├── zenalyze.py
  ├── _quick_obj.py
- ├── __init__.py
- └── README.md
+ └── __init__.py
 ```
 
 ---
