@@ -140,15 +140,15 @@ This section documents the public APIs exposed at the package root. These cover 
 ## ✔️ Final Summary
 
 | API                                                  | Accepts What                                                            | Purpose                                |
-| ---------------------------------------------------- | ---------------------------------------------------------------------   | -------------------------------------- |
+| ---------------------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------- |
 | `PandasData`                                         | Individual pandas DataFrames                                            | Manual creation of Data objects        |
 | `PandasDataLoad`                                     | Directory path                                                          | Load multiple pandas tables + metadata |
 | `SparkData`                                          | Spark DataFrames                                                        | Manual creation of Spark Data objects  |
 | `SparkDataLoad`                                      | SparkSession + directory                                                | Load Spark-backed tables + metadata    |
 | **`Zenalyze`**                                       | **Any mix of either Pandas or Spark DataLoad + Data objects (`*args`)** | Main LLM analysis engine               |
 | **`TestZen`**                                        | **Any mix of either Pandas or Spark DataLoad + Data objects (`*args`)** | Mock testing engine                    |
-| `create_zenalyze_object_with_env_var_and_last5_hist` | Directory, SparkSession for Spark usage                                 | Quick Zenalyze setup                   |
-| `create_testzen_object_with_env_var_and_last5_hist`  | Directory                                                               | Quick TestZen setup                    |
+| `create_zenalyze_object_with_env_var_and_last5_hist` | Directory, SparkSession only for Spark usage                            | Quick Zenalyze setup                   |
+| `create_testzen_object_with_env_var_and_last5_hist`  | Directory, SparkSession only for Spark usage                            | Quick TestZen setup                    |
 | `CodeSummarizerLLM`                                  | Raw history                                                             | Summarization utility                  |
 | `BuddyLLM`                                           | Summary context                                                         | Q&A assistant                          |
 
