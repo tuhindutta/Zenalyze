@@ -79,7 +79,7 @@ zen.do("calculate total revenue per customer")
 
 ---
 
-### 3. Zenalyze: End-to-End LLM-Powered Analysis
+### 4. Automatic History Summarization
 Long analysis sessions stay manageable.
 - After every N steps, the Summarizer LLM compresses history:
     - rewrites user queries concisely
@@ -87,11 +87,12 @@ Long analysis sessions stay manageable.
     - preserves variable names in backticks
     - keeps join keys and transformations
     - maintains consistency across steps
+
 This allows large multi-step workflows without losing cont
 
 ---
 
-### 4. Buddy Assistant (BuddyLLM)
+### 5. Buddy Assistant (BuddyLLM)
 A conversational assistant for explanations and walkthroughs.
 
 Examples:
@@ -109,7 +110,7 @@ It reads from summarized history and replies naturally.
 A fully offline, deterministic, API-free mode.
 - no API calls
 - zero cost
-- afe for CI/CD
+- safe for CI/CD
 - ideal for development
 
 Example:
