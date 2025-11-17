@@ -4,6 +4,7 @@
 `zenalyze` turns Large Language Models into a practical coding assistant designed specifically for data analysis.  
 It loads datasets, extracts metadata, builds intelligent prompts, tracks analysis history, and generates fully executable Python code and even executes directly in your environment.
 
+### **[Public API Usage Guide](https://tuhindutta.github.io/Zenalyze/api-usage)**
 ### **[GitHub Link](https://github.com/tuhindutta/Zenalyze)**
 
 Works seamlessly with:
