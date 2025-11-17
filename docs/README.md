@@ -119,7 +119,7 @@ Example:
 from zenalyze import create_testzen_object_with_env_var_and_last5_hist
 
 zent = create_testzen_object_with_env_var_and_last5_hist(globals(), "./data")
-zent.do("show me something")  # deterministic dummy output
+zent.do("show me something")
 ```
 
 ---
@@ -168,29 +168,29 @@ pip install git+https://github.com/tuhindutta/Zenalyze.git
 ## 📘 Basic Usage
 1. Initialize
 
-```python
-from zenalyze import create_zenalyze_object_with_env_var_and_last5_hist
-
-zen = create_zenalyze_object_with_env_var_and_last5_hist(globals(), "./data")
-```
+    ```python
+    from zenalyze import create_zenalyze_object_with_env_var_and_last5_hist
+    
+    zen = create_zenalyze_object_with_env_var_and_last5_hist(globals(), "./data")
+    ```
 
 2. Run a query
 
-```python
-zen.do("show unique customers and total sales per region")
-```
+    ```python
+    zen.do("show unique customers and total sales per region")
+    ```
 
 3. Continue analysis
 
-```python
-zen.do("plot distribution of order quantities per product")
-```
+    ```python
+    zen.do("plot distribution of order quantities per product")
+    ```
 
 4. Ask the Buddy assistant
 
-```python
-zen.buddy("Summarize steps 1 to 4")
-```
+    ```python
+    zen.buddy("Summarize steps 1 to 4")
+    ```
 
 ---
 
@@ -227,7 +227,7 @@ Data Layer
 
 | Component                      | Purpose                 |
 | ------------------------------ | ----------------------- |
-| `Data`                     | Base dataset wrapper    |
+| `Data`                         | Base dataset wrapper    |
 | `PandasData`, `PandasDataLoad` | Pandas backend          |
 | `SparkData`, `SparkDataLoad`   | Spark backend           |
 | `metadata.py`                  | Extracts table metadata |
