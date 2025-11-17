@@ -199,7 +199,11 @@ zen.buddy("Summarize steps 1 to 4")
 zenalyze/
  ├── data/
  │    ├── pandas/
+ │    │    ├── data.py
+ │    │    └── metadata.py
  │    ├── spark/
+ │    │    ├── data.py
+ │    │    └── metadata.py
  │    ├── data_base_class.py
  │    └── __init__.py
  │
